@@ -211,7 +211,8 @@ router.get('/receipt', (req, res) => {
   res.render('receipt', {
     path: req.originalUrl,
     cart: cart,
-    messages: req.flash()
+    messages: req.flash(),
+    referrer: req.get('Referrer') || '/'
   });
 });
 

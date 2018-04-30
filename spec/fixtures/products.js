@@ -11,7 +11,8 @@ exports.Product = {
     price: 59.99,
     image: 'man-shirt.jpg',
     options: ['Small', 'Medium', 'Large'],
-    categories: ['mens']
+    categories: ['mens'],
+    createdAt: new Date((new Date)*1 - 1000*3600*2)
   },
   woman_shirt: {
     _id: new ObjectId(),
@@ -20,5 +21,5 @@ exports.Product = {
     price: 59.99,
     image: 'woman-shirt.jpg',
     categories: ['womens']
-  },
+  }
 };
