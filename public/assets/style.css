@@ -1,7 +1,7 @@
 @import url(bootstrap/css/bootstrap.min.css);
 @import url(font-awesome/css/font-awesome.min.css);
 /*Google fonts*/
-@import url('https://fonts.googleapis.com/css?family=Faster+One');
+@import url('https://fonts.googleapis.com/css?family=Arapey');
 
 :focus {
   outline-style: none;
@@ -20,7 +20,6 @@
 .product-title {
   text-transform: capitalize;
   font-weight: bold;
-  font-family: sans-serif;
   font-size: 1.5em;
 }
 
@@ -30,6 +29,7 @@
 
 #content {
   padding: 5% 0;
+  font-family: 'Arapey', serif;
 }
 
 .go-to-shop-lnk,
@@ -129,7 +129,6 @@ select.form-control {
 
 .main-page-link {
   font-size: 2em;
-  font-family: 'Faster One', 'Times New Roman', sans-serif;
 }
 
 .shipping-info,
