@@ -67,6 +67,24 @@
   border-radius: 4px;
 }
 
+#info a {
+  color: #fff;
+}
+
+#currency-nav {
+  margin-bottom: 0;
+  min-height: 0;
+}
+
+#currency-nav div span:nth-child(1) {
+  font-weight: bold;
+}
+
+#currency-nav .active {
+  color: #909090;
+  font-style: italic;
+}
+
 /**
  * My adjustments
  */
@@ -191,6 +209,10 @@ select.form-control {
   text-align: center;
 }
 
+.currency-nav {
+  margin-bottom: 0;
+}
+
 /**
  * Reveal/hide instant transaction option
  * 2018-3-19 https://codersblock.com/blog/checkbox-trickery-with-css/
@@ -257,10 +279,4 @@ input#email-checkbox:checked ~ #transaction-field {
     padding-left: .5em;
     padding-right: .5em;
   }
-/*
-  .payment-info div span:nth-child(2) {
-    width: 40%;
-  }
-*/
 }
-

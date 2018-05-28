@@ -50,21 +50,6 @@ router.get('/remove/:id/:option?', (req, res) => {
 router.post('/checkout', (req, res) => {
   let cart = (typeof req.session.cart !== 'undefined') ? req.session.cart : false;
 
-  // Validate order form
-  const errors = validator(req.body);
-  if (errors) {
-    res.render('cart', {
-      path: req.originalUrl,
-      cart: cart,
-      messages: { error: errors },
-      referrer: req.get('Referrer'),
-      details: req.body
-    });
-  }
-  else {
-
-    Cart.purchase(req.body, cart);
-
     // Determine appropriate mailer templates
     const orderPaid = req.body.transaction && req.body.transaction.trim();
     const vendorTextTemplate = 'vendorUnpaidText.ejs';
@@ -171,6 +156,7 @@ router.post('/checkout', (req, res) => {
                     req.flash('error', [ { message: 'Something went wrong' } ]);
                     return res.redirect('/cart');
                   });
+<<<<<<< HEAD
                 });
               });
             }
@@ -178,6 +164,19 @@ router.post('/checkout', (req, res) => {
               req.flash('success', 'Your order has been received. Print this receipt for your records.');
               res.redirect('/cart/receipt');
             }
+=======
+                }
+                else {
+                  req.flash('success', 'Your order has been received. Print this receipt for your records.');
+                  res.redirect('/cart/receipt');
+                }
+              });
+            }).catch((err) => {
+              console.log(err);
+              req.flash('error', [ { message: 'Something went wrong' } ]);
+              return res.redirect('/cart');
+            });
+>>>>>>> 7ff54ebec203b1d6e3bd4712bece919c2763ce53
           });
         }).catch((err) => {
           console.log(err);
@@ -185,19 +184,21 @@ router.post('/checkout', (req, res) => {
           return res.redirect('/cart');
         });
       });
-    });
-  }
+    }
+  }).catch((err) => {
+    req.flash('error', [ { message: 'Something went wrong' } ]);
+    return res.redirect('/cart');
+  });
 });
 
 /**
  * GET /receipt
  */
 router.get('/receipt', (req, res) => {
-  let cart = (typeof req.session.cart !== 'undefined') ? req.session.cart : false;
 
-  if (!cart || !cart.order) {
+  if (!req.session.cart.order) {
     res.render('receipt', {
-      cart: cart,
+      cart: req.session.cart,
       path: req.originalUrl,
       messages: req.flash(),
       referrer: req.get('Referrer') || '/'

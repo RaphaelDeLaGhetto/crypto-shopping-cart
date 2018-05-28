@@ -40,7 +40,6 @@ describe('Product', () => {
       const expected = {
         name: "Sweet Mining T",
         description: "Get fired from your job for looking too cool",
-        price: 0.01,
         createdAt: undefined,
         updatedAt: undefined
       };

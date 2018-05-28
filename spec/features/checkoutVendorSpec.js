@@ -55,14 +55,12 @@ describe('checkout', () => {
 
     describe('order processing', () => {
       const _order = {
-//        transaction: '0x50m3crazy1d',
         recipient: 'Anonymous',
         street: '123 Fake St',
         city: 'The C-Spot',
         province: 'AB',
         country: 'Canada',
         postcode: 'T1K-5B3',
-//        contact: '1',
         email: 'me@example.com'
       };
 
@@ -150,6 +148,16 @@ describe('checkout', () => {
             // The customer was instructed to send $___  to ___ 
             expect(html).toContain(`${cart.formattedTotal}`);
             expect(html).toContain(`${process.env.INTERAC_EMAIL}`);
+=======
+            expect(html).toContain(`Total: ${cart.totals[cart.preferredCurrency].formattedTotal} ${cart.preferredCurrency}`);
+    
+            // The customer was instructed to send ___ ETH to ___ 
+            expect(html).toContain(`${cart.totals[cart.preferredCurrency].formattedTotal} ${cart.preferredCurrency}`);
+            expect(html).toContain(`${_wallets[0].address}`);
+
+            // TransactionID
+            expect(html).not.toContain(_order.transaction);
+>>>>>>> 7ff54ebec203b1d6e3bd4712bece919c2763ce53
 
             // Shipping details
             expect(html).toContain('Shipping details:');

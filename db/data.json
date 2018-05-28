@@ -1,4 +1,5 @@
 {
+
   "products": {
     "_model": "Product",
     "vintage-pillow": {
@@ -111,3 +112,4 @@
     }
   }
 }
+

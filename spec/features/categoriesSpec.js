@@ -10,18 +10,9 @@ Browser.localhost('example.com', PORT);
 
 describe('categories', () => {
 
-  let browser, _products;
-  beforeEach((done) => {
+  let browser;
+  beforeEach(() => {
     browser = new Browser({ waitDuration: '30s', loadCss: false });
-
-    fixtures.load(__dirname + '/../fixtures/products.js', models.mongoose, (err) => {
-      if (err) done.fail(err);
-
-      models.Product.find({}).sort('createdAt').then((results) => {
-        _products = results;
-        done();
-      });
-    });
   });
 
   afterEach((done) => {
@@ -42,17 +33,117 @@ describe('categories', () => {
         }
         models.collection('sessions').find({}).toArray((err, results) => {
           if (err) {
+        if (err) {
+          done.fail(err);
+        }
+        expect(results.length).toEqual(0);
+        browser.visit('/category/dummy', (err) => {
+          if (err) {
             done.fail(err);
           }
-          expect(results.length).toEqual(1);
-          expect(results[0]._id).not.toBe(undefined);
-          expect(results[0].session).not.toBe(undefined);
-          expect(results[0].session.cookie).not.toBe(undefined);
-          expect(results[0].session.cart).not.toBe(undefined);
-          expect(results[0].session.cart.items).toEqual([]);
-          expect(results[0].session.cart.totals).toEqual(0);
-          expect(results[0].expires).not.toBe(undefined);
+          models.collection('sessions').find({}).toArray((err, results) => {
+            if (err) {
+              done.fail(err);
+            }
+            expect(results.length).toEqual(1);
+            expect(results[0]._id).not.toBe(undefined);
+            expect(results[0].session).not.toBe(undefined);
+            expect(results[0].session.cookie).not.toBe(undefined);
+            expect(results[0].session.cart).not.toBe(undefined);
+            expect(results[0].session.cart.items).toEqual([]);
+            expect(results[0].session.cart.totals).toEqual({});
+            expect(results[0].session.cart.preferredCurrency).toEqual(process.env.PREFERRED_CURRENCY);
+            expect(results[0].expires).not.toBe(undefined);
+            done();
+          });
+        });
+      });
+    });
+  
+    describe('when no such category exists', () => {
+      beforeEach((done) => {
+        browser.visit('/category/nosuchcategory', (err) => {
+          if (err) done.fail(err);
+          browser.assert.success();
+          browser.assert.url('/category/nosuchcategory');
+            done();
+        });
+      });
+  
+      it('displays an appropriate message', () => {
+        browser.assert.text('.alert-info', 'No such category exists: nosuchcategory');
+      });
+  
+      it('displays a Continue Shopping button linking to root', () => {
+        browser.assert.elements('i.fa.fa-backward.go-to-shop-lnk', 1);
+        browser.assert.link('.navbar-brand', 'See all products', '/');
+      });
+
+      it('does not display a currency menu', () => {
+        browser.assert.elements('#currency-nav a', 0);
+        browser.assert.elements('#currency-nav span', 0);
+      });
+    });
+  
+    describe('when category exists', () => {
+      beforeEach((done) => {
+        browser.visit('/category/mens', (err) => {
+          if (err) {
+            done.fail(err);
+          } 
+          browser.assert.success();
           done();
+        });
+      });
+  
+      it('displays only the products in that category', (done) => {
+        models.Product.find({ categories: 'mens' }).populate('prices.wallet').sort('createdAt').then((results) => {
+          expect(results.length).toEqual(1);
+          expect(results[0].categories.length).toEqual(1);
+          expect(results[0].categories[0]).toEqual('mens');
+  
+          browser.assert.elements('ul#products li.product', results.length);
+  
+          // Man's t-shirt
+          browser.assert.text('ul#products li.product:nth-child(1) h3.product-title', results[0].name);
+          browser.assert.element(`ul#products li.product figure.product-image img[src="/images/products/${results[0].images[0]}"]`);
+          browser.assert.text('ul#products li.product:nth-child(1) .product-description', results[0].description);
+          expect(results[0].prices[0].wallet.currency).toEqual(process.env.PREFERRED_CURRENCY);
+          browser.assert.text('ul#products li.product:nth-child(1) .cart-data .product-info span.price',
+                              `${results[0].prices[0].formattedPrice} ${process.env.PREFERRED_CURRENCY}`);
+          browser.assert.text(`ul#products li.product:nth-child(1) .cart-data form input[type=hidden][name=id][value="${results[0].id}"]`);
+  
+          done();
+        });
+      });
+  
+      it('displays a Checkout link', (done) => {
+        browser.clickLink('Checkout', (err) => {
+          if (err) done.fail(err);
+          browser.assert.success();
+          browser.assert.url('/cart');
+          done();
+        });
+      });
+  
+      it('displays a Main Shop link', (done) => {
+        browser.clickLink('See all products', (err) => {
+          if (err) done.fail(err);
+          browser.assert.success();
+          browser.assert.url('/');
+          done();
+        });
+      });
+  
+      describe('contextual checkout behaviour', () => {
+        it('displays a Continue Shopping button linking category path', (done) => {
+          browser.clickLink('Checkout', (err) => {
+            if (err) done.fail(err);
+            browser.assert.success();
+            browser.assert.elements('i.fa.fa-shopping-cart.go-to-shop-lnk', 1);
+            browser.assert.link('.navbar-brand', 'Continue shopping', '/category/mens');
+            done();
+          });
         });
       });
     });
@@ -65,18 +156,14 @@ describe('categories', () => {
         browser.assert.success();
         browser.assert.url('/category/nosuchcategory');
           done();
+        });
       });
-    });
 
     it('displays an appropriate message', () => {
       browser.assert.text('.alert-info', 'No such category exists: nosuchcategory');
     });
 
-    it('displays a Continue Shopping button linking to root', () => {
-      browser.assert.elements('i.fa.fa-backward.go-to-shop-lnk', 1);
-      browser.assert.link('.navbar-brand', 'See all products', '/');
-    });
-  });
+    describe('products in database', () => {
 
   describe('when category exists', () => {
     beforeEach((done) => {
@@ -96,13 +183,55 @@ describe('categories', () => {
         expect(results[0].categories[0]).toEqual('mens');
 
         browser.assert.elements('ul#products li.product', results.length);
+      });
+    });
+
+    it('displays only the products in that category', (done) => {
+      models.Product.find({ categories: 'mens' }).sort('createdAt').then((results) => {
+        expect(results.length).toEqual(1);
+        expect(results[0].categories.length).toEqual(1);
+        expect(results[0].categories[0]).toEqual('mens');
+
+        browser.assert.elements('ul#products li.product', results.length);
 
         // Man's t-shirt
         browser.assert.text('ul#products li.product:nth-child(1) h3.product-title', results[0].name);
         browser.assert.element(`ul#products li.product figure.product-image img[src="/images/products/${results[0].images[0]}"]`);
         browser.assert.text('ul#products li.product:nth-child(1) .product-description', results[0].description);
         browser.assert.text('ul#products li.product:nth-child(1) .cart-data .product-info span.price', `${results[0].formattedPrice}`);
+
+            models.Wallet.find({}).sort('createdAt').then((wallets) => {
+              _wallets = wallets;
+
+<<<<<<< HEAD
+        // Man's t-shirt
+        browser.assert.text('ul#products li.product:nth-child(1) h3.product-title', results[0].name);
+        browser.assert.element(`ul#products li.product figure.product-image img[src="/images/products/${results[0].images[0]}"]`);
+        browser.assert.text('ul#products li.product:nth-child(1) .product-description', results[0].description);
+        browser.assert.text('ul#products li.product:nth-child(1) .cart-data .product-info span.price', `${results[0].formattedPrice}`);
         browser.assert.text(`ul#products li.product:nth-child(1) .cart-data form input[type=hidden][name=id][value="${results[0].id}"]`);
+=======
+              fixtures.load(__dirname + '/../fixtures/products.js', models.mongoose, (err) => {
+                if (err) done.fail(err);
+>>>>>>> 7ff54ebec203b1d6e3bd4712bece919c2763ce53
+
+                models.Product.find({}).sort('createdAt').then((products) => {
+                  _products = products;
+
+                  browser.visit('/category/mens', (err) => {
+                    if (err) done.fail(err);
+                    browser.assert.success();
+                    done();
+                  });
+                }).catch((error) => {
+                  done.fail(error);
+                });
+              });
+            }).catch((error) => {
+              done.fail(error);
+            });
+          });
+        });
 
         done();
       });
@@ -117,14 +246,9 @@ describe('categories', () => {
       });
     });
 
-    it('displays a Main Shop link', (done) => {
-      browser.clickLink('See all products', (err) => {
-        if (err) done.fail(err);
-        browser.assert.success();
-        browser.assert.url('/');
-        done();
-      });
-    });
+            done();
+          });
+        });
 
     describe('contextual checkout behaviour', () => {
       it('displays a Continue Shopping button linking category path', (done) => {
