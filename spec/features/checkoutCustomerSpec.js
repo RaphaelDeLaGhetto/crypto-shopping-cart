@@ -24,8 +24,6 @@ describe('checkout', () => {
         done();
       });
     });
-      });
-    });
   });
 
   afterEach((done) => {
@@ -139,9 +137,9 @@ describe('checkout', () => {
               expect(text).toContain(process.env.SECURITY_ANSWER);
 
               expect(text).toContain(
-                `1. ${cart.items[0].name} - ${cart.items[0].option}, ${cart.items[0].prices[process.env.PREFERRED_CURRENCY].formattedPrice}`);
-              expect(text).toContain(`2. ${cart.items[1].name}, ${cart.items[1].prices[process.env.PREFERRED_CURRENCY].formattedPrice}`);
-              expect(text).toContain(`TOTAL: ${cart.totals[process.env.PREFERRED_CURRENCY].formattedTotal} ${process.env.PREFERRED_CURRENCY}`);
+                `1. ${cart.items[0].name} - ${cart.items[0].option}, ${cart.items[0].formattedPrice}`);
+              expect(text).toContain(`2. ${cart.items[1].name}, ${cart.items[1].formattedPrice}`);
+              expect(text).toContain(`TOTAL: ${cart.formattedTotal}`);
       
               expect(text).toContain('Once your payment has been accepted, your order will be processed and shipped to:');
               expect(text).toContain(_order.recipient);
@@ -209,14 +207,14 @@ describe('checkout', () => {
                 }
                 expect(results.length).toEqual(1);
                 expect(results[0].session.cart.items.length).toEqual(0);
-                expect(results[0].session.cart.totals).toEqual(0);
-                expect(results[0].session.cart.formattedTotal).toEqual(0);
+                expect(results[0].session.cart.total).toEqual(0);
+                expect(results[0].session.cart.formattedTotal).toEqual('$0.00');
       
                 done();
               });
             });
           });
-    
+
           describe('contains duplicate products', () => {
             beforeEach((done) => {
               models.Product.find({}).sort('createdAt').then((results) => {
