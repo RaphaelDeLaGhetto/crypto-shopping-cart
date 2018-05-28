@@ -31,11 +31,11 @@ describe('products', () => {
   });
 
   it('adds a session containing an empty cart on first visit', (done) => {
-    models.collection('sessions').find({}).toArray((err, results) => {
+    models.collection('sessions').count({}, (err, results) => {
       if (err) {
         done.fail(err);
       }
-      expect(results.length).toEqual(0);
+      expect(results).toEqual(0);
       browser.visit('/product/dummy', (err) => {
         if (err) {
           done.fail(err);
@@ -50,7 +50,7 @@ describe('products', () => {
           expect(results[0].session.cookie).not.toBe(undefined);
           expect(results[0].session.cart).not.toBe(undefined);
           expect(results[0].session.cart.items).toEqual([]);
-          expect(results[0].session.cart.totals).toEqual(0);
+          expect(results[0].session.cart.total).toEqual(0);
           expect(results[0].expires).not.toBe(undefined);
           done();
         });
@@ -115,9 +115,9 @@ describe('products', () => {
       // Man's t-shirt
       browser.assert.text('ul#products li.product:nth-child(2) h3.product-title', prod.name);
       browser.assert.element(`ul#products li.product figure.product-image img[src="/images/products/${prod.images[0]}"]`);
-      browser.assert.text('ul#products li.product:nth-child(1) .product-description', prod.description);
-      browser.assert.text('ul#products li.product:nth-child(1) .cart-data .product-info span.price', `${prod.formattedPrice}`);
-      browser.assert.text(`ul#products li.product:nth-child(1) .cart-data form input[type=hidden][name=id][value="${prod.id}"]`);
+      browser.assert.text('ul#products li.product:nth-child(3) .product-description', prod.description);
+      browser.assert.text('ul#products li.product:nth-child(3) .cart-data .product-info span.price', `${prod.formattedPrice}`);
+      browser.assert.text(`ul#products li.product:nth-child(3) .cart-data form input[type=hidden][name=id][value="${prod.id}"]`);
 
       // Options
       browser.assert.element('ul#products li.product:nth-child(3) .cart-data form select');
@@ -166,18 +166,10 @@ describe('products', () => {
         // Woman's t-shirt (no options specified)
         browser.assert.text('ul#products li.product:nth-child(2) h3.product-title', prod.name);
         browser.assert.element(`ul#products li.product figure.product-image img[src="/images/products/${prod.images[0]}"]`);
-        browser.assert.text('ul#products li.product:nth-child(1) .product-description', prod.description);
-        browser.assert.text('ul#products li.product:nth-child(1) .cart-data .product-info span.price', `${prod.formattedPrice}`);
-        browser.assert.text(`ul#products li.product:nth-child(1) .cart-data form input[type=hidden][name=id][value="${prod.id}"]`);
+        browser.assert.text('ul#products li.product:nth-child(3) .product-description', prod.description);
+        browser.assert.text('ul#products li.product:nth-child(3) .cart-data .product-info span.price', `${prod.formattedPrice}`);
+        browser.assert.text(`ul#products li.product:nth-child(3) .cart-data form input[type=hidden][name=id][value="${prod.id}"]`);
 
-      browser.visit(`/product/${prod.friendlyLink}`, (err) => {
-        if (err) {
-          done.fail(err);
-        } 
-        browser.assert.success();
-
-        browser.assert.style('section.thumb-viewer figure.product-image', 'visibility', 'visible');
-        browser.assert.elements('input[type=radio]', 0);
         done();
       });
     });
@@ -190,7 +182,7 @@ describe('products', () => {
       });
 
       it('adds an item to the cart session', (done) => {
-        browser.pressButton('li.product:nth-child(1) form button[type=submit]', () => {
+        browser.pressButton('li.product:nth-child(3) form button[type=submit]', () => {
 
           models.collection('sessions').find({}).toArray((err, results) => {
             if (err) {
@@ -198,14 +190,14 @@ describe('products', () => {
             }
             expect(results.length).toEqual(1);
             expect(results[0].session.cart.items.length).toEqual(1);
-            expect(results[0].session.cart.totals).toEqual(product.price);
+            expect(results[0].session.cart.total).toEqual(product.price);
             done();
           });
         });
       });
 
       it('redirects to cart', (done) => {
-        browser.pressButton('li.product:nth-child(1) form button[type=submit]', () => {
+        browser.pressButton('li.product:nth-child(3) form button[type=submit]', () => {
           browser.assert.redirected();
           browser.assert.url('/cart');
           done();

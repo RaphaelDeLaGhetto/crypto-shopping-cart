@@ -24,7 +24,6 @@
   <% include messages %>
   
   <% if(product) { %>
-    <% include currency-selector %>
     <ul id="products" class="row equal">
       <li class="product col col-md-4"></li>
       <li class="product col col-md-4">
@@ -51,7 +50,7 @@
         <div class="cart-data">
           <div class="product-info">
             <span class="price">
-              <%= product.prices[0].formattedPrice %> <%= cart.preferredCurrency %>
+              <%= product.formattedPrice %>
             </span>
             <form action="/cart" method="post">
               <% if (product.options.length) { %>
